@@ -12,8 +12,7 @@ def create_q_table(num_states: int, num_actions: int) -> ndarray:
     :param num_actions: Number of actions.
     :return: q_table: Initial q_table.
     """
-    # TODO: implement.
-    raise NotImplementedError
+    return np.zeros((num_states, num_actions), dtype=np.float32)
 
 
 class QLearnerAgent:
@@ -52,8 +51,8 @@ class QLearnerAgent:
         :param observation: The observation.
         :return: The action.
         """
-        # TODO: implement.
-        raise NotImplementedError
+        action = int(np.argmax(self.q_table[observation]))
+        return action
 
     def act(self, observation: int, training: bool = True) -> int:
         """
@@ -63,8 +62,11 @@ class QLearnerAgent:
         :param training: Boolean flag for training.
         :return: The action.
         """
-        # TODO: implement.
-        raise NotImplementedError
+        if training:
+            action = self.epsilon_greedy_action(observation)
+        else:
+            action = self.greedy_action(observation)
+        return action
 
     def epsilon_greedy_action(self, observation: int) -> int:
         """
@@ -73,8 +75,11 @@ class QLearnerAgent:
         :param observation: The observation.
         :return: The action.
         """
-        # TODO: implement.
-        raise NotImplementedError
+        if np.random.sample() < self.epsilon:
+            action = np.random.choice(self.q_table.shape[-1])
+        else:
+            action = self.greedy_action(observation)
+        return action
 
     def learn(self, obs: int, act: int, rew: float, done: bool, next_obs: int) -> None:
         """
@@ -86,5 +91,7 @@ class QLearnerAgent:
         :param done: Done flag.
         :param next_obs: The next observation.
         """
-        # TODO: implement.
-        raise NotImplementedError
+        self.q_table[obs][act] += self.learning_rate * (
+                rew + int(not done) * self.gamma * np.max(self.q_table[next_obs]) - self.q_table[obs][act])
+        if done:
+            self.epsilon = max(self.epsilon * self.epsilon_decay, self.epsilon_min)

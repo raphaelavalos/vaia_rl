@@ -74,5 +74,23 @@ def train(env: Env, gamma: float, num_episodes: int, evaluate_every: int, num_ev
 
 
 if __name__ == '__main__':
+    n = 5
     env = gym.make('FrozenLake-v1')
-    # TODO: add code to run the experiments and plot the results. See bandits/runner.py for inspiration.
+    # agent, returns, evaluation_returns = train(env, 0.99, 25000, 1000, 32, 0.1, EPSILON_GREEDY, 1.0, 0.05, 0.995, None)
+    r = [train(env, 0.99, 30000, 1000, 32, 0.1, 1.0, 0.05, 0.995) for _ in range(n)]
+    agents, returns, evaluation_returns = zip(*r)
+    returns = np.stack(returns).reshape((n, -1, 100)).mean(-1)
+    evaluation_returns = np.stack(evaluation_returns)
+    returns = pd.DataFrame(returns.T)
+    returns.columns = [f'run_{i}' for i in range(n)]
+    returns = returns.stack().reset_index()
+    returns.columns = ['time', 'run', 'value']
+    returns.time = returns.time * 100 + 100
+    sns.lineplot(data=returns, x='time', y='value', errorbar='sd',)
+    evaluation_returns = pd.DataFrame(evaluation_returns.T)
+    evaluation_returns.columns = [f'run_{i}' for i in range(n)]
+    evaluation_returns = evaluation_returns.stack().reset_index()
+    evaluation_returns.columns = ['time', 'run', 'value']
+    evaluation_returns.time = evaluation_returns.time * 1000 + 1000
+    sns.lineplot(data=evaluation_returns, x='time', y='value', errorbar='sd',)
+    plt.show()
