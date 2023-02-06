@@ -82,7 +82,7 @@ class SoftmaxAgent(BaseAgent):
         self.tau = self.initial_tau
 
     def act(self, t) -> int:
-        probs = np.exp(self.q_value / self.tau)
+        probs = np.exp((self.q_value - max(self.q_value)) / self.tau)
         norm_probs = probs / np.sum(probs)
         action = np.random.choice(self.arms, p=norm_probs)
         return action
