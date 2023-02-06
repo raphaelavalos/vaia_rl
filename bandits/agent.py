@@ -31,21 +31,38 @@ class EpsilonGreedyAgent(BaseAgent):
     def __init__(self, arms: int, epsilon: float, epsilon_decay: Optional[float] = None,
                  epsilon_min: Optional[float] = None):
         super().__init__(arms)
-        # TODO: add needed variables here.
+        self.epsilon = epsilon
+        self.initial_epsilon = epsilon
+        self.epsilon_decay = epsilon_decay
+        self.epsilon_min = epsilon_min
+        self.q_value = np.zeros(self.arms)
+        self.arm_count = np.zeros(self.arms, dtype=np.int32)
 
     def reset(self):
-        # TODO: complete
-        raise NotImplementedError()
+        self.epsilon = self.initial_epsilon
+        self.q_value = np.zeros(self.arms)
+        self.arm_count = np.zeros(self.arms, dtype=np.int32)
+
+    def greedy_action(self) -> int:
+        action = np.argmax(self.q_value)
+        return action
 
     def act(self, t) -> int:
-        # TODO: complete
-        raise NotImplementedError()
+        if self.epsilon > np.random.random():
+            action = np.random.choice(self.arms)
+        else:
+            action = self.greedy_action()
+        return action
 
     def learn(self, act: int, reward: float):
-        # TODO: complete
-        # Do not forget to update epsilon.
-        raise NotImplementedError()
-
+        self.arm_count[act] += 1
+        step_size = 1 / self.arm_count[act]
+        self.q_value[act] += step_size * (reward - self.q_value[act])
+        if self.epsilon_decay:
+            if self.epsilon_min:
+                self.epsilon = max(self.epsilon_min, self.epsilon*self.epsilon_decay)
+            else:
+                self.epsilon *= self.epsilon_decay
 
 class SoftmaxAgent(BaseAgent):
     """Softmax Agent"""
