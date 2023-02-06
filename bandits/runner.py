@@ -81,19 +81,16 @@ if __name__ == '__main__':
     # TODO: There are three levels of difficulty: 0, 1, 2.
     env = Env(difficulty=0)
     num_arms = env.get_arms()
-
-    # Epsilon Greedy Parameters
-    epsilon = None
-    epsilon_decay = None
-    epsilon_min = None
-
-    # UCB
-    c = None
-
-    # Softmax
-    tau = None
+    epsilon = 0.8
+    epsilon_decay = 0.9995
+    epsilon_min = 0.1
+    c = 2
+    tau = 2
     tau_decay = None
     tau_min = None
+    num_steps = 200
+    num_experiments = 100
+
 
     # General params
     num_steps = 200

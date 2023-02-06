@@ -9,7 +9,7 @@ class BaseAgent:
         self.arms = arms
 
     def reset(self):
-        """This method should reset the agent so it can start learning in a new run."""
+        """This method should reset the agent to restart the learning."""
         raise NotImplemented
 
     def greedy_action(self) -> int:
@@ -88,7 +88,7 @@ class SoftmaxAgent(BaseAgent):
         return action
 
     def greedy_action(self) -> int:
-        action = np.argmax(self.q_value)
+        action = np.argmax(self.q_value).item()
         return action
 
     def learn(self, act: int, reward: float):
@@ -105,17 +105,27 @@ class UCBAgent(BaseAgent):
     """UCB Agent."""
     def __init__(self, arms: int, c: float):
         super().__init__(arms)
-        # TODO: add needed variables here.
+        self.q_value = np.zeros(self.arms)
+        self.arm_count = np.zeros(self.arms, dtype=np.int32)
+        self.c = c
 
     def reset(self):
-        # TODO: complete
-        raise NotImplementedError()
+        self.q_value = np.zeros(self.arms)
+        self.arm_count = np.zeros(self.arms, dtype=np.int32)
+
+    def greedy_action(self) -> int:
+        action = np.argmax(self.q_value).item()
+        return action
 
     def act(self, t) -> int:
-        # TODO: complete
-        raise NotImplementedError()
+        if t < self.arms:
+            action = t
+        else:
+            action = np.argmax([(self.q_value[i] + self.c * np.log(t) / self.arm_count[i])
+                                for i in range(self.arms)]).item()
+        return action
 
     def learn(self, act: int, reward: float):
-        # TODO: complete
-        # Do not forget to update epsilon.
-        raise NotImplementedError()
+        self.arm_count[act] += 1
+        step_size = 1 / self.arm_count[act]
+        self.q_value[act] += step_size * (reward - self.q_value[act])
