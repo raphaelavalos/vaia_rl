@@ -69,22 +69,37 @@ class SoftmaxAgent(BaseAgent):
 
     def __init__(self, arms: int, tau: float, tau_decay: Optional[float] = None, tau_min: Optional[float] = None):
         super().__init__(arms)
-
-        # TODO: add needed variables here.
+        self.tau = tau
+        self.initial_tau = tau
+        self.tau_decay = tau_decay
+        self.tau_min = tau_min
+        self.q_value = np.zeros(self.arms)
+        self.arm_count = np.zeros(self.arms, dtype=np.int32)
 
     def reset(self):
-        # TODO: complete
-        raise NotImplementedError()
+        self.q_value = np.zeros(self.arms)
+        self.arm_count = np.zeros(self.arms, dtype=np.int32)
+        self.tau = self.initial_tau
 
     def act(self, t) -> int:
-        # TODO: complete
-        raise NotImplementedError()
+        probs = np.exp(self.q_value / self.tau)
+        norm_probs = probs / np.sum(probs)
+        action = np.random.choice(self.arms, p=norm_probs)
+        return action
+
+    def greedy_action(self) -> int:
+        action = np.argmax(self.q_value)
+        return action
 
     def learn(self, act: int, reward: float):
-        # TODO: complete
-        # Do not forget to update epsilon.
-        raise NotImplementedError()
-
+        self.arm_count[act] += 1
+        step_size = 1 / self.arm_count[act]
+        self.q_value[act] += step_size * (reward - self.q_value[act])
+        if self.tau_decay:
+            if self.tau_min:
+                self.tau = max(self.tau_min, self.tau * self.tau_decay)
+            else:
+                self.tau *= self.tau_decay
 
 class UCBAgent(BaseAgent):
     """UCB Agent."""
